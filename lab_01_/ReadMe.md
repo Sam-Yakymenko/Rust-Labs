@@ -1,3 +1,3 @@
 ## ReadMe
 
--Instructions about Lab`s
+- Instructions about Lab`s
