@@ -1,4 +1,3 @@
-#[derive(Debug)]
 struct Film {
     name: String,
     director: String,
