@@ -23,7 +23,6 @@ fn main() {
         [201, 202, 203],
         [301, 302, 303]
     ];
-
     println!("Original matrix:");
     print_matrix(matrix);
     
