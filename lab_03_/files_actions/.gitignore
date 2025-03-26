@@ -1,5 +1,2 @@
 target/
 Cargo.lock
-lab_data/
-lab_data_copy/
-data.csv
