@@ -1,2 +1,4 @@
 target/
 Cargo.lock
+Lab_data/
+Lab_data_copy/
