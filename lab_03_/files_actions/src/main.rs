@@ -2,6 +2,12 @@ use std::fs;
 use std::io;
 use std::path::Path;
 
+fn read_user_input() -> io::Result<String> {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input.trim().to_lowercase())
+}
+
 fn copy_dir(source: &Path, destination: &Path) -> io::Result<()> {
     if !source.is_dir() {
         return Err(io::Error::new(
@@ -120,10 +126,4 @@ fn main() -> io::Result<()> {
     }
 
     Ok(())
-}
-
-fn read_user_input() -> io::Result<String> {
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
-    Ok(input.trim().to_lowercase())
 }
