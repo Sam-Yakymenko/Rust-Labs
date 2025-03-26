@@ -1,53 +1,14 @@
-use std::fs::{self, File};
-use std::io::Write;
+use std::fs;
+use std::io;
 use std::path::Path;
 
-fn create_file(filename: &str) -> std::io::Result<()> {
-    let mut file = File::create(filename)?;
-    writeln!(file, "Ім'я,Вік,Місто,Професія,Країна")?;
-    writeln!(file, "Іван,30,Київ,Інженер,Україна")?;
-    writeln!(file, "Марія,25,Львів,Вчитель,Україна")?;
-    writeln!(file, "Петро,35,Харків,Художник,Україна")?;
-    writeln!(file, "Ольга,28,Одеса,Лікар,Україна")?;
-    writeln!(file, "Андрій,40,Дніпро,Менеджер,Україна")?;
-    writeln!(file, "Наталія,32,Вінниця,Розробник,Україна")?;
-    writeln!(file, "Юрій,27,Житомир,Кухар,Україна")?;
-    writeln!(file, "Софія,38,Чернівці,Дизайнер,Україна")?;
-    writeln!(file, "Віктор,45,Тернопіль,Пілот,Україна")?;
-    writeln!(file, "Людмила,29,Полтава,Письменник,Україна")?;
-    Ok(())
-}
-
-fn create_dir(dir_name: &str) -> std::io::Result<()> {
-    let dir = Path::new(dir_name);
-    if !dir.exists() {
-        fs::create_dir(dir)?;
-    }
-    Ok(())
-}
-
-fn copy_file(source: &str, destination: &str) -> std::io::Result<()> {
-    if Path::new(source).exists() {
-        fs::copy(source, destination)?;
-    } else {
-        println!("File '{}' is not exist.", source);
-    }
-    Ok(())
-}
-
-fn move_file(source: &str, destination: &Path) -> std::io::Result<()> {
-    fs::rename(source, destination)?;
-    Ok(())
-}
-
-fn copy_dir(source: &Path, destination: &Path) -> std::io::Result<()> {
+fn copy_dir(source: &Path, destination: &Path) -> io::Result<()> {
     if !source.is_dir() {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            "Source is not a dir",
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Source is not a directory",
         ));
     }
-
     fs::create_dir_all(destination)?;
 
     for entry in fs::read_dir(source)? {
@@ -65,18 +26,16 @@ fn copy_dir(source: &Path, destination: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-fn find_files(dir: &Path) -> std::io::Result<()> {
-    if dir.is_dir() {
-        for entry in fs::read_dir(dir)? {
-            let entry = entry?;
-            let path = entry.path();
-            let metadata = entry.metadata()?;
+fn search(dir: &Path) -> io::Result<()> {
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let data = entry.metadata()?;
+        let path = entry.path();
 
-            if metadata.is_file() {
-                if let Some(extension) = path.extension().and_then(|s| s.to_str()) {
-                    if extension == "csv" && metadata.len() > 100 {
-                        println!("length {}, {}", metadata.len(), path.display());
-                    }
+        if data.is_file() {
+            if let Some(ex) = path.extension() {
+                if ex == "csv" && data.len() > 1 {
+                    println!("{} length {}", path.display(), data.len());
                 }
             }
         }
@@ -84,72 +43,87 @@ fn find_files(dir: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
-fn remove_file(filename: &str) -> std::io::Result<()> {
-    fs::remove_file(filename)?;
-    println!("File '{}' removed.", filename);
-    Ok(())
-}
-
-fn remove_directory(dir_name: &str) -> std::io::Result<()> {
-    fs::remove_dir_all(dir_name)?;
-    println!("Directory '{}' removed.", dir_name);
-    Ok(())
-}
-
-fn remove_directories(dir_names: &[&str]) -> std::io::Result<()> {
-    for dir_name in dir_names {
-        fs::remove_dir_all(dir_name)?;
-        println!("Directory '{}' removed.", dir_name);
-    }
-    Ok(())
-}
-
-fn list_directory_contents(dir_name: &str) -> std::io::Result<()> {
-    println!("Contents of directory '{}':", dir_name);
-    for entry in fs::read_dir(dir_name)? {
-        let entry = entry?;
-        let path = entry.path();
-        println!("{}", path.display());
-    }
-    Ok(())
-}
-
-fn print_file_properties(filename: &str) -> std::io::Result<()> {
-    let metadata = fs::metadata(filename)?;
-    println!("File properties for '{}':", filename);
-    println!("Size: {} bytes", metadata.len());
-    println!("Created: {:?}", metadata.created()?);
-    println!("Modified: {:?}", metadata.modified()?);
-    Ok(())
-}
-
-fn print_directory_properties(dir_name: &str) -> std::io::Result<()> {
-    let metadata = fs::metadata(dir_name)?;
-    println!("Directory properties for '{}':", dir_name);
-    println!("Created: {:?}", metadata.created()?);
-    println!("Modified: {:?}", metadata.modified()?);
-    Ok(())
-}
-
-fn main() -> std::io::Result<()> {
-    create_file("data.csv")?;
-    create_dir("lab_data")?;
-    copy_file("data.csv", "data_copy.csv")?;
-    move_file("data_copy.csv", Path::new("lab_data").join("data_copy.csv").as_path())?;
-    copy_dir(Path::new("lab_data"), Path::new("lab_data_copy"))?;
-    find_files(Path::new("lab_data"))?;
+fn main() -> io::Result<()> {
+    fs::write("data.csv", "lab 3 data")?;
 
     for i in 1..4 {
-        create_dir(&format!("{}", i))?;
+        let dir = format!("{}", i);
+        let dir_path = Path::new(&dir);
+        if !dir_path.exists() {
+            fs::create_dir(dir_path)?;
+        }
+        fs::write(dir_path.join("empty.csv"), "")?;
     }
 
-    remove_file("data.csv")?;
-    remove_directory("lab_data_copy")?;
-    remove_directories(&["1", "2", "3"])?;
+    fs::copy("data.csv", "data_copy.csv")?;
 
-    list_directory_contents("lab_data")?;
-    print_file_properties("lab_data/data_copy.csv")?;
-    print_directory_properties("lab_data")?;
+    let source = Path::new("1");
+    let destination = Path::new("1_copy");
+    copy_dir(source, destination)?;
+
+    println!("Press 'y' to search:");
+    if read_user_input()? == "y" {
+        search(Path::new("."))?;
+    }
+
+    println!("Press 'y' to delete files and directories:");
+    if read_user_input()? == "y" {
+        fs::remove_file("data_copy.csv")?;
+        fs::remove_dir_all("1_copy")?;
+
+        let dirs_to_delete = vec![Path::new("2"), Path::new("3")];
+
+        for dir_path in dirs_to_delete {
+            if dir_path.exists() {
+                fs::remove_dir_all(dir_path)?;
+            }
+        }
+    }
+
+    println!("Press 'y' to show directory content:");
+    if read_user_input()? == "y" {
+        let cont_path = Path::new("1");
+
+        if cont_path.is_dir() {
+            println!("Content of directory:");
+            for entry in fs::read_dir(cont_path)? {
+                let entry = entry?;
+                let path = entry.path();
+                println!(" {}", path.display());
+            }
+        }
+    }
+
+    println!("Press 'y' to show file and directory properties:");
+    if read_user_input()? == "y" {
+        let file_prop_path = Path::new("data.csv");
+        let file_meta = fs::metadata(file_prop_path)?;
+        println!("Size: {} bytes", file_meta.len());
+        println!("Type: {:?}", file_meta.file_type());
+        println!("Permissions: {:?}", file_meta.permissions());
+        println!("Modified: {:?}", file_meta.modified());
+
+        let dir_prop_path = Path::new("1");
+        let dir_meta = fs::metadata(dir_prop_path)?;
+        if dir_meta.is_dir() {
+            println!("Size: {} bytes", dir_meta.len());
+            println!("Type: {:?}", dir_meta.file_type());
+            println!("Permissions: {:?}", dir_meta.permissions());
+            println!("Modified: {:?}", dir_meta.modified());
+        }
+    }
+
+    println!("Press 'y' to delete all files, created by this programm:");
+    if read_user_input()? == "y"{
+        fs::remove_file("data.csv")?;
+        fs::remove_dir_all("1")?;
+    }
 
     Ok(())
+}
+
+fn read_user_input() -> io::Result<String> {
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input.trim().to_lowercase())
 }
