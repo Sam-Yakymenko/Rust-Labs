@@ -1,11 +1,9 @@
-use std::env;
-
-fn is_balanced(s: &str) -> bool {
+fn is_valid_brackets(s: &str) -> bool {
     let mut stack: Vec<char> = Vec::new();
 
-    for c in s.chars() {
-        match c {
-            '(' | '[' | '{' => stack.push(c),
+    for char in s.chars() {
+        match char {
+            '(' | '[' | '{' => stack.push(char),
             ')' => {
                 if stack.is_empty() || stack.pop() != Some('(') {
                     return false;
@@ -21,7 +19,7 @@ fn is_balanced(s: &str) -> bool {
                     return false;
                 }
             }
-            _ => {} // Ignore other characters
+            _ => {} 
         }
     }
 
@@ -29,18 +27,27 @@ fn is_balanced(s: &str) -> bool {
 }
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let test_cases = vec![
+        "([]{})[]",
+        "([]]",
+        "(())",
+        "(){}[]",
+        "((())",
+        "}{",
+        "[{()}]",
+        "((])",
+        "hello(world)",
+        "[123]{abc}(xyz)",
+        "a[b]c{d}e(f)",
+        "(1[2)3]",
+        "a(b[c)d}e",
+        "раз[два{три(чотири)п'ять}шість]сім",
+        "()тест[]123{}",
+        "(тест)[123]{}",
+        "тест(123)[привіт]{}",
+    ];
 
-    if args.len() != 2 {
-        println!("Usage: parentheses <string>");
-        return;
-    }
-
-    let input_string = &args[1];
-
-    if is_balanced(input_string) {
-        println!("Brackets are balanced");
-    } else {
-        println!("Brackets are not balanced");
+    for case in test_cases {
+        println!("{} : {}", case, is_valid_brackets(case));
     }
 }
